@@ -1,0 +1,24 @@
+@import url(../reindeer/styles.css);
+
+.v-formlayout-captioncell {
+	text-align: left;
+}
+
+.v-textfield {
+	text-align: right;
+}
+
+.v-formlayout-row {
+	text-align: center;
+}
+.v-caption {
+	
+}
+
+.v-readonly, .v-textfield-readonly {
+	font-weight:bold;
+}
+
+.v-formlayout-contentcell {
+	text-align: right;
+}
