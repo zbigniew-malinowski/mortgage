@@ -1,10 +1,17 @@
 package pl.zm.mortgage.calc;
 
+import java.io.Serializable;
 
 
-public class InputData {
 
-    private Integer budget = 3000;
+public class InputData implements Serializable {
+
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -1421035799272219368L;
+	
+	private Integer budget = 3000;
     private Double creditInterestRate = 6.0;
     private Double depositInterestRate = 5.0;
     private Integer flatPrice = 300000;

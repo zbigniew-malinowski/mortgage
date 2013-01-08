@@ -1,5 +1,6 @@
 package pl.zm.mortgage;
 
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -16,10 +17,13 @@ import com.invient.vaadin.charts.InvientChartsConfig.AreaConfig;
 import com.invient.vaadin.charts.InvientChartsConfig.AxisBase.AxisTitle;
 import com.invient.vaadin.charts.InvientChartsConfig.AxisBase.Tick;
 import com.invient.vaadin.charts.InvientChartsConfig.AxisBase.TickmarkPlacement;
-import com.invient.vaadin.charts.InvientChartsConfig.NumberXAxis;
+import com.invient.vaadin.charts.InvientChartsConfig.CategoryAxis;
+import com.invient.vaadin.charts.InvientChartsConfig.MarkerState;
 import com.invient.vaadin.charts.InvientChartsConfig.NumberYAxis;
 import com.invient.vaadin.charts.InvientChartsConfig.Stacking;
 import com.invient.vaadin.charts.InvientChartsConfig.SymbolMarker;
+import com.invient.vaadin.charts.InvientChartsConfig.SymbolMarker.Symbol;
+import com.invient.vaadin.charts.InvientChartsConfig.Tooltip;
 import com.invient.vaadin.charts.InvientChartsConfig.XAxis;
 import com.invient.vaadin.charts.InvientChartsConfig.YAxis;
 import com.invient.vaadin.charts.InvientChartsConfig.YAxisDataLabel;
@@ -33,25 +37,20 @@ public class Chart<T extends Enum<T>> extends Panel {
 	private static final long serialVersionUID = 5458031501384091462L;
 
 	public Chart(String chartTitle, String titleY, ChartData<T> data) {
-		// List<String> x = Arrays.asList("1750", "1800", "1850", "1900",
-		// "1950", "1999", "2050");
-		// double[] data = {502, 635, 809, 947, 1402, 3634, 5268};
 		List<Integer> dataX = data.getxAxis();
 
 		T[] seriesNames = data.getSeriesNames();
-		Double min = dataX.get(0).doubleValue();
-		Double max = dataX.get(dataX.size() - 1).doubleValue();
 
 		InvientChartsConfig chartConfig = new InvientChartsConfig();
 		chartConfig.getGeneralChartConfig().setType(SeriesType.AREA);
 
 		chartConfig.getTitle().setText(chartTitle);
 
-		NumberXAxis xAxis = new NumberXAxis();
-
-		xAxis.setMin(min);
-		xAxis.setMax(max);
-
+		CategoryAxis xAxis = new CategoryAxis();
+        xAxis.setCategories(Arrays.asList("", "1 rok", "2 lata", "3 lata", "4 lata", "5 lat",
+                "6 lat", "7 lat", "8 lat", "9 lat", "10 lat"));
+        xAxis.setTitle(new AxisTitle("Czas do kupna mieszkania"));
+		
 		Tick tick = new Tick();
 		tick.setPlacement(TickmarkPlacement.ON);
 		xAxis.setTick(tick);
@@ -63,17 +62,21 @@ public class Chart<T extends Enum<T>> extends Panel {
 
 		yAxis.setTitle(new AxisTitle(titleY));
 		yAxis.setLabel(new YAxisDataLabel());
-		// yAxis.getLabel().setFormatterJsFunc("function() {" +
-		// " return this.value / 1000; " + "}");
+		yAxis.getLabel().setFormatterJsFunc(
+				"function() {" + " return this.value + ' 000 zł'; " + "}");
 
 		LinkedHashSet<YAxis> yAxesSet = new LinkedHashSet<InvientChartsConfig.YAxis>();
 		yAxesSet.add(yAxis);
 		chartConfig.setYAxes(yAxesSet);
 
-		// chartConfig.getTooltip().setFormatterJsFunc(
-		// "function() {" +
-		// " return ''+ this.x +': '+ $wnd.Highcharts.numberFormat(this.y, 0, ',') +' millions';"
-		// + "}");
+		Tooltip tooltip = new Tooltip();
+//		tooltip.setFormatterJsFunc(String
+//				.format("function() {"
+//						+ " return '%s'+ this.series +': '+ $wnd.Highcharts.numberFormat(this.y, 0, ',') +'%s';"
+//						+ "}", "Rok ", " miesięcy"));
+		tooltip.setCrosshairs(true);
+		tooltip.setShared(true);
+		chartConfig.setTooltip(tooltip);
 
 		AreaConfig areaCfg = new AreaConfig();
 		areaCfg.setStacking(Stacking.NORMAL);
@@ -82,7 +85,10 @@ public class Chart<T extends Enum<T>> extends Panel {
 
 		SymbolMarker marker = new SymbolMarker();
 		marker.setLineColor(new RGB(102, 102, 102));
-		marker.setLineWidth(1);
+		marker.setEnabled(false);
+		marker.setSymbol(Symbol.CIRCLE);
+		marker.setRadius(2);
+		marker.setHoverState(new MarkerState(true));
 		areaCfg.setMarker(marker);
 
 		chartConfig.addSeriesConfig(areaCfg);
@@ -97,18 +103,20 @@ public class Chart<T extends Enum<T>> extends Panel {
 
 		addComponent(chart);
 		chart.setWidth("100%");
-		chart.setHeight("300px");
-		setWidth("400px");
-		setHeight("350px");
+		chart.setHeight("60%");
+		setWidth("100%");
+		setHeight("100%");
 	}
 
-	private void addSeries(InvientCharts chart, String seriesTitle, List<Integer> dataX, List<Integer> dataY) {
+	private void addSeries(InvientCharts chart, String seriesTitle,
+			List<Integer> dataX, List<Integer> dataY) {
 		XYSeries series = new XYSeries(seriesTitle);
 		series.setSeriesPoints(getPoints(series, dataX, dataY));
 		chart.addSeries(series);
 	}
 
-	private static LinkedHashSet<DecimalPoint> getPoints(Series series, List<Integer> values) {
+	private static LinkedHashSet<DecimalPoint> getPoints(Series series,
+			List<Integer> values) {
 		LinkedHashSet<DecimalPoint> points = new LinkedHashSet<DecimalPoint>();
 		for (double value : values) {
 			points.add(new DecimalPoint(series, value));
@@ -116,7 +124,8 @@ public class Chart<T extends Enum<T>> extends Panel {
 		return points;
 	}
 
-	private static LinkedHashSet<DecimalPoint> getPoints(Series series, List<Integer> dataX, List<Integer> dataY) {
+	private static LinkedHashSet<DecimalPoint> getPoints(Series series,
+			List<Integer> dataX, List<Integer> dataY) {
 		LinkedHashSet<DecimalPoint> points = new LinkedHashSet<DecimalPoint>();
 		for (int i = 0; i < dataX.size(); i++) {
 			int x = dataX.get(i);

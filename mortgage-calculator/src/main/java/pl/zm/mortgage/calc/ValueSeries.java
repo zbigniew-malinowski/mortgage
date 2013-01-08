@@ -3,7 +3,7 @@ package pl.zm.mortgage.calc;
 
 public enum ValueSeries {
 
-    DEPOSIT,
+	INTEREST,
     CAPITAL,
-    INTEREST
+    DEPOSIT,    
 }
