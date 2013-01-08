@@ -12,7 +12,7 @@ public class CalculationsTest {
         int capital = 100000;
         int installment = 2000;
         int installmentsCount = Calculations.calculateInstallmentsCount(capital, annualInterestRate, installment);
-        Assert.assertEquals(57, installmentsCount);
+        Assert.assertEquals(58, installmentsCount);
     }
 
     @Test

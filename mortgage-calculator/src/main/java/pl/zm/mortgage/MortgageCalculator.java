@@ -1,8 +1,13 @@
 package pl.zm.mortgage;
 
-import pl.zm.mortgage.calc.ChartData;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.context.MessageSource;
+
 import pl.zm.mortgage.calc.Controller;
 import pl.zm.mortgage.calc.InputData;
+import pl.zm.mortgage.calc.TimeSeries;
+import pl.zm.mortgage.calc.MoneySeries;
 
 import com.vaadin.Application;
 import com.vaadin.data.util.BeanItem;
@@ -13,14 +18,17 @@ import com.vaadin.ui.Panel;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 
+@Configurable(preConstruction = true)
 public class MortgageCalculator extends Application {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -7128604913110613494L;
+	
 	private VerticalLayout charts;
-	private Controller controller = new Controller();
+	
+	@Autowired
+	MessageSource messageSource;
+	@Autowired
+	Controller controller;
 	
 	@Override
 	public void init() {
@@ -43,6 +51,7 @@ public class MortgageCalculator extends Application {
 		dataPanel.setHeight("100%");
 
 		Form form = new Form();
+		form.setFormFieldFactory(new TextFieldFactory());
 		InputData input = new InputData();
 		form.setItemDataSource(new BeanItem<InputData>(input));
 		dataPanel.addComponent(form);
@@ -53,14 +62,9 @@ public class MortgageCalculator extends Application {
 		split.setSecondComponent(charts);
 		charts.setWidth("100%");
 		split.setSplitPosition(350, Sizeable.UNITS_PIXELS);
-		
 
-		
-
-		ChartData<?>[] data = controller.calculate(input);
-		
-		charts.addComponent(new Chart("Total flat cost", "", data[0]));
-		charts.addComponent(new Chart("Total time", "", data[1]));
+		charts.addComponent(new Chart<MoneySeries>(MoneySeries.class, controller, messageSource));
+		charts.addComponent(new Chart<TimeSeries>(TimeSeries.class, controller, messageSource));
 	}
 
 

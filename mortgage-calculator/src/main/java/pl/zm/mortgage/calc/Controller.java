@@ -1,20 +1,24 @@
 package pl.zm.mortgage.calc;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.springframework.stereotype.Component;
 
-
-
+@Component
 public class Controller implements Serializable {
     
-    /**
-	 * 
-	 */
 	private static final long serialVersionUID = -1618425494587714741L;
 
-	public ChartData<?>[] calculate(InputData input){
-        ChartData<ValueSeries> values = new ChartData<ValueSeries>(ValueSeries.class);
-        ChartData<TimeSeries> time = new ChartData<TimeSeries>(TimeSeries.class);
+	@SuppressWarnings("unchecked")
+	public <T extends Enum<T>>ChartData<T> calculate(InputData input, Class<T> type){
+		Map<Class<? extends Enum<?>>, ChartData<?>> map = new HashMap<Class<? extends Enum<?>>, ChartData<?>>();
+		
+		ChartData<MoneySeries> money = new ChartData<MoneySeries>(MoneySeries.class);
+		ChartData<TimeSeries> time = new ChartData<TimeSeries>(TimeSeries.class);
+		map.put(MoneySeries.class, money);
+		map.put(TimeSeries.class, time);
         
         int capital = input.getFlatPrice();
         double creditIr = input.getCreditInterestRate();
@@ -29,16 +33,19 @@ public class Controller implements Serializable {
             int installmentsCount = Calculations.calculateInstallmentsCount(creditCapital, creditIr, installment);
             int creditInterest = Calculations.calculateCreditInterest(creditCapital, installment, installmentsCount);
             
-            values.addX(rentTime/12);
-            values.setData(ValueSeries.DEPOSIT, Calculations.formatAmountKpln(depositValue));            
-            values.setData(ValueSeries.CAPITAL, Calculations.formatAmountKpln(creditCapital));
-            values.setData(ValueSeries.INTEREST, Calculations.formatAmountKpln(creditInterest));
+            money.addX(rentTime/12);
+            money.setData(MoneySeries.DEPOSIT, Calculations.formatAmountKpln(depositValue));            
+            money.setData(MoneySeries.CAPITAL, Calculations.formatAmountKpln(creditCapital));
+            money.setData(MoneySeries.INTEREST, Calculations.formatAmountKpln(creditInterest));
             
             time.addX(rentTime/12);
             time.setData(TimeSeries.RENT, rentTime);
             time.setData(TimeSeries.CREDIT, installmentsCount);
         }
         
-        return new ChartData<?>[]{values, time};
+        return (ChartData<T>) map.get(type);
     }
+	
+	
+	
 }
