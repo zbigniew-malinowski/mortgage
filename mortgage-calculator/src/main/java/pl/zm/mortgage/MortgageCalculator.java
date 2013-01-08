@@ -1,13 +1,11 @@
 package pl.zm.mortgage;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.MessageSource;
 
 import pl.zm.mortgage.calc.Controller;
 import pl.zm.mortgage.calc.InputData;
-import pl.zm.mortgage.calc.TimeSeries;
 import pl.zm.mortgage.calc.MoneySeries;
+import pl.zm.mortgage.calc.TimeSeries;
 
 import com.vaadin.Application;
 import com.vaadin.data.util.BeanItem;
@@ -18,20 +16,22 @@ import com.vaadin.ui.Panel;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 
-@Configurable(preConstruction = true)
 public class MortgageCalculator extends Application {
 
 	private static final long serialVersionUID = -7128604913110613494L;
 	
 	private VerticalLayout charts;
 	
-	@Autowired
 	MessageSource messageSource;
-	@Autowired
 	Controller controller;
 	
 	@Override
 	public void init() {
+		
+		SpringContextHelper sch = new SpringContextHelper(this);
+		controller = sch.getBean(Controller.class);
+		messageSource = sch.getBean(MessageSource.class);
+		
 		Window window = new Window();
 		setMainWindow(window);
 		window.setSizeFull();

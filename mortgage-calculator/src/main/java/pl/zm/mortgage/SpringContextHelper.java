@@ -15,7 +15,7 @@ public class SpringContextHelper {
         context = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
     }
 
-    public Object getBean(final String beanRef) {
-        return context.getBean(beanRef);
+	public <T> T getBean(Class<T> type) {
+        return (T) context.getBean(type);
     }    
 }
