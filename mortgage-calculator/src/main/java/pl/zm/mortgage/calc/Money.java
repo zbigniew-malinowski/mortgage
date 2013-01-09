@@ -1,7 +1,7 @@
 package pl.zm.mortgage.calc;
 
 
-public enum MoneySeries {
+public enum Money {
 
 	INTEREST,
     CAPITAL,

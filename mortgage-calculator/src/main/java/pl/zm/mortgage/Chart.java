@@ -3,6 +3,7 @@ package pl.zm.mortgage;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.MessageSource;
@@ -42,8 +43,7 @@ public class Chart<T extends Enum<T>> extends Panel {
 	private MessageSource messageSource;
 	private Class<T> type;
 
-	public Chart(Class<T> type, Controller controller,
-			MessageSource messageSource) {
+	public Chart(Class<T> type, Controller controller, MessageSource messageSource) {
 
 		this.controller = controller;
 		this.messageSource = messageSource;
@@ -100,9 +100,8 @@ public class Chart<T extends Enum<T>> extends Panel {
 
 		for (T series : type.getEnumConstants()) {
 
-			List<Integer> dataY = controller.calculate(new InputData(), type)
-					.getDataSeries(series);
-			addSeries(chart, series.name(), dataY);
+			List<Integer> dataY = controller.calculate(new InputData(), type).getDataSeries(series);
+			addSeries(chart, getSeriesName(series), dataY);
 		}
 
 		addComponent(chart);
@@ -112,50 +111,60 @@ public class Chart<T extends Enum<T>> extends Panel {
 		setHeight("100%");
 	}
 
+	private String getSeriesName(T series) {
+		String name = series.name().toLowerCase();
+		return getMessage("series." + name, null);
+	}
+	
+	public void update(){
+		
+	}
+
 	private String getAxixXTitle() {
-		return "Czas do kupna mieszkania";
+		return getMessage("axisx.title", null);
+	}
+
+	private String getKey(String code) {
+		return String.format(code + ".%s", type.getSimpleName().toLowerCase());
 	}
 
 	private List<String> getCategories() {
-		return Arrays
-				.asList("", "1 rok", "2 lata", "3 lata", "4 lata", "5 lat",
-						"6 lat", "7 lat", "8 lat", "9 lat", "10 lat");
+		return Arrays.asList(getArrayMessage("categories", null));
 	}
 
 	private String getTooltipFormatter() {
-		return "function() {"
-				+ " return "
-				+ "'<b>' + this.x + '</b>' + '<br/><br/>' "
-				+ "+ this.points[0].series.name + ': ' + $wnd.Highcharts.numberFormat(this.points[0].y*1000, 0, ',', ' ') + ' zł<br/>' "
-				+ "+ this.points[1].series.name + ': ' + $wnd.Highcharts.numberFormat(this.points[1].y*1000, 0, ',', ' ') + ' zł<br/>' "
-				+ "+ this.points[2].series.name + ': ' + $wnd.Highcharts.numberFormat(this.points[2].y*1000, 0, ',', ' ') + ' zł<br/>' "
-				+ "+ '<b>Razem: <b>' + $wnd.Highcharts.numberFormat((this.points[0].y + this.points[1].y + this.points[2].y) * 1000, 0, ',', ' ')  + ' zł<br/>'"
-				+ " ;}";
+		return getMessage("formatter.tooltip", null);
 	}
 
 	private String getAxisLabelFormatter() {
-		return "function() {" + " return this.value + ' 000 zł'; " + "}";
+		
+		return getMessage("formatter.label", null); 
+	}
+
+	private String[] getArrayMessage(String code, String[] params) {
+		String message = getMessage(code, params);
+		return message.split(";");
+	}
+	
+	private String getMessage(String code, String[] params) {
+		return messageSource.getMessage(getKey(code), params, Locale.getDefault());
 	}
 
 	private String getAxisYTitle() {
-		// TODO Auto-generated method stub
-		return null;
+		return getMessage("axisy.title", null);
 	}
 
 	private String getChartTitle() {
-		// TODO Auto-generated method stub
-		return null;
+		return getMessage("title", null);
 	}
 
-	private void addSeries(InvientCharts chart, String seriesTitle,
-			List<Integer> dataY) {
+	private void addSeries(InvientCharts chart, String seriesTitle, List<Integer> dataY) {
 		XYSeries series = new XYSeries(seriesTitle);
 		series.setSeriesPoints(getPoints(series, dataY));
 		chart.addSeries(series);
 	}
 
-	private static LinkedHashSet<DecimalPoint> getPoints(Series series,
-			List<Integer> values) {
+	private static LinkedHashSet<DecimalPoint> getPoints(Series series, List<Integer> values) {
 		LinkedHashSet<DecimalPoint> points = new LinkedHashSet<DecimalPoint>();
 		for (double value : values) {
 			points.add(new DecimalPoint(series, value));
@@ -163,14 +172,4 @@ public class Chart<T extends Enum<T>> extends Panel {
 		return points;
 	}
 
-//	private static LinkedHashSet<DecimalPoint> getPoints(Series series,
-//			List<Integer> dataX, List<Integer> dataY) {
-//		LinkedHashSet<DecimalPoint> points = new LinkedHashSet<DecimalPoint>();
-//		for (int i = 0; i < dataX.size(); i++) {
-//			int x = dataX.get(i);
-//			int y = dataY.get(i);
-//			points.add(new DecimalPoint(series, x, y));
-//		}
-//		return points;
-//	}
 }

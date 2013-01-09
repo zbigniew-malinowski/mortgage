@@ -1,7 +1,7 @@
 package pl.zm.mortgage.calc;
 
 
-public enum TimeSeries {
+public enum Time {
 
     
     CREDIT,

@@ -15,10 +15,10 @@ public class Controller implements Serializable {
 	public <T extends Enum<T>>ChartData<T> calculate(InputData input, Class<T> type){
 		Map<Class<? extends Enum<?>>, ChartData<?>> map = new HashMap<Class<? extends Enum<?>>, ChartData<?>>();
 		
-		ChartData<MoneySeries> money = new ChartData<MoneySeries>(MoneySeries.class);
-		ChartData<TimeSeries> time = new ChartData<TimeSeries>(TimeSeries.class);
-		map.put(MoneySeries.class, money);
-		map.put(TimeSeries.class, time);
+		ChartData<Money> money = new ChartData<Money>(Money.class);
+		ChartData<Time> time = new ChartData<Time>(Time.class);
+		map.put(Money.class, money);
+		map.put(Time.class, time);
         
         int capital = input.getFlatPrice();
         double creditIr = input.getCreditInterestRate();
@@ -34,13 +34,13 @@ public class Controller implements Serializable {
             int creditInterest = Calculations.calculateCreditInterest(creditCapital, installment, installmentsCount);
             
             money.addX(rentTime/12);
-            money.setData(MoneySeries.DEPOSIT, Calculations.formatAmountKpln(depositValue));            
-            money.setData(MoneySeries.CAPITAL, Calculations.formatAmountKpln(creditCapital));
-            money.setData(MoneySeries.INTEREST, Calculations.formatAmountKpln(creditInterest));
+            money.setData(Money.DEPOSIT, Calculations.formatAmountKpln(depositValue));            
+            money.setData(Money.CAPITAL, Calculations.formatAmountKpln(creditCapital));
+            money.setData(Money.INTEREST, Calculations.formatAmountKpln(creditInterest));
             
             time.addX(rentTime/12);
-            time.setData(TimeSeries.RENT, rentTime);
-            time.setData(TimeSeries.CREDIT, installmentsCount);
+            time.setData(Time.RENT, rentTime);
+            time.setData(Time.CREDIT, installmentsCount);
         }
         
         return (ChartData<T>) map.get(type);

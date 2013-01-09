@@ -4,8 +4,8 @@ import org.springframework.context.MessageSource;
 
 import pl.zm.mortgage.calc.Controller;
 import pl.zm.mortgage.calc.InputData;
-import pl.zm.mortgage.calc.MoneySeries;
-import pl.zm.mortgage.calc.TimeSeries;
+import pl.zm.mortgage.calc.Money;
+import pl.zm.mortgage.calc.Time;
 
 import com.vaadin.Application;
 import com.vaadin.data.util.BeanItem;
@@ -63,8 +63,8 @@ public class MortgageCalculator extends Application {
 		charts.setWidth("100%");
 		split.setSplitPosition(350, Sizeable.UNITS_PIXELS);
 
-		charts.addComponent(new Chart<MoneySeries>(MoneySeries.class, controller, messageSource));
-		charts.addComponent(new Chart<TimeSeries>(TimeSeries.class, controller, messageSource));
+		charts.addComponent(new Chart<Money>(Money.class, controller, messageSource));
+		charts.addComponent(new Chart<Time>(Time.class, controller, messageSource));
 	}
 
 
