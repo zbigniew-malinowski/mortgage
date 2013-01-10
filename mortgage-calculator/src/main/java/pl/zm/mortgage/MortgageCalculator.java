@@ -1,5 +1,8 @@
 package pl.zm.mortgage;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.springframework.context.MessageSource;
 
 import pl.zm.mortgage.calc.Controller;
@@ -19,11 +22,13 @@ import com.vaadin.ui.Window;
 public class MortgageCalculator extends Application {
 
 	private static final long serialVersionUID = -7128604913110613494L;
+
+	private static final Collection<?> FORM_FIELDS = Arrays.asList("budget", "flatPrice", "flatCost", "flatRent", "creditInterestRate", "depositInterestRate");
 	
 	private VerticalLayout charts;
 	
-	MessageSource messageSource;
-	Controller controller;
+	private MessageSource messageSource;
+	private Controller controller;
 	
 	@Override
 	public void init() {
@@ -38,7 +43,7 @@ public class MortgageCalculator extends Application {
 		VerticalLayout mainLayout = new VerticalLayout();
 		window.setContent(mainLayout);
 		mainLayout.setSizeFull();
-		
+		setTheme("mortgage");
 		
 		HorizontalSplitPanel split = new HorizontalSplitPanel();
 		split.setSizeFull();
@@ -50,22 +55,34 @@ public class MortgageCalculator extends Application {
 		dataPanel.setWidth("350px");
 		dataPanel.setHeight("100%");
 
-		Form form = new Form();
-		form.setFormFieldFactory(new TextFieldFactory());
+		final Form form = new Form();
+		TextFieldFactory tff = new TextFieldFactory(messageSource);
+		form.setFormFieldFactory(tff);
 		InputData input = new InputData();
-		form.setItemDataSource(new BeanItem<InputData>(input));
+		BeanItem<InputData> item = new BeanItem<InputData>(input);
+		form.setItemDataSource(item);
+		form.setVisibleItemProperties(FORM_FIELDS);
+		form.setImmediate(true);
 		dataPanel.addComponent(form);
 		split.setFirstComponent(dataPanel);
-		
+	
 		charts = new VerticalLayout();
 		charts.setSizeFull();
 		split.setSecondComponent(charts);
 		charts.setWidth("100%");
 		split.setSplitPosition(350, Sizeable.UNITS_PIXELS);
 
-		charts.addComponent(new Chart<Money>(Money.class, controller, messageSource));
-		charts.addComponent(new Chart<Time>(Time.class, controller, messageSource));
+		Chart<Money> moneyChart = new Chart<Money>(item, Money.class, controller, messageSource);
+		Chart<Time> timeChart = new Chart<Time>(item, Time.class, controller, messageSource);
+		
+		tff.addListener(moneyChart);
+		tff.addListener(timeChart);
+		
+		charts.addComponent(moneyChart);
+		charts.addComponent(timeChart);
 	}
+	
+	
 
 
 	

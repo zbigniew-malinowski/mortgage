@@ -23,8 +23,8 @@ public class Controller implements Serializable {
         int capital = input.getFlatPrice();
         double creditIr = input.getCreditInterestRate();
         double depositIr = input.getDepositInterestRate();
-        int installment = input.getBudget() - input.getAdministrativeRent();
-        int monthlyCommitment = input.getBudget() - input.getHiredFlatRent();
+        int installment = input.getBudget() - input.getFlatCost();
+        int monthlyCommitment = input.getBudget() - input.getFlatRent();
         
         for (int rentTime = 0; rentTime <= Calculations.MAX_RENT_TIME; rentTime+=12) {
             

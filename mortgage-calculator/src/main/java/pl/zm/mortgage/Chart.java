@@ -8,6 +8,7 @@ import java.util.Locale;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.MessageSource;
 
+import pl.zm.mortgage.TextFieldFactory.FormEditedListener;
 import pl.zm.mortgage.calc.Controller;
 import pl.zm.mortgage.calc.InputData;
 
@@ -32,10 +33,12 @@ import com.invient.vaadin.charts.InvientChartsConfig.Tooltip;
 import com.invient.vaadin.charts.InvientChartsConfig.XAxis;
 import com.invient.vaadin.charts.InvientChartsConfig.YAxis;
 import com.invient.vaadin.charts.InvientChartsConfig.YAxisDataLabel;
+import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.data.util.BeanItem;
 import com.vaadin.ui.Panel;
 
 @Configurable(preConstruction = true)
-public class Chart<T extends Enum<T>> extends Panel {
+public class Chart<T extends Enum<T>> extends Panel implements FormEditedListener {
 
 	private static final long serialVersionUID = 5458031501384091462L;
 
@@ -43,11 +46,15 @@ public class Chart<T extends Enum<T>> extends Panel {
 	private MessageSource messageSource;
 	private Class<T> type;
 
-	public Chart(Class<T> type, Controller controller, MessageSource messageSource) {
+	private InvientCharts wrappedChart;
+	private InputData data;
+
+	public Chart(BeanItem<InputData> item, Class<T> type, Controller controller, MessageSource messageSource) {
 
 		this.controller = controller;
 		this.messageSource = messageSource;
 		this.type = type;
+		this.data = item.getBean();
 
 		InvientChartsConfig chartConfig = new InvientChartsConfig();
 		chartConfig.getGeneralChartConfig().setType(SeriesType.AREA);
@@ -96,17 +103,17 @@ public class Chart<T extends Enum<T>> extends Panel {
 
 		chartConfig.addSeriesConfig(areaCfg);
 
-		InvientCharts chart = new InvientCharts(chartConfig);
+		wrappedChart = new InvientCharts(chartConfig);
 
 		for (T series : type.getEnumConstants()) {
 
 			List<Integer> dataY = controller.calculate(new InputData(), type).getDataSeries(series);
-			addSeries(chart, getSeriesName(series), dataY);
+			addSeries(wrappedChart, getSeriesName(series), dataY);
 		}
 
-		addComponent(chart);
-		chart.setWidth("100%");
-		chart.setHeight("60%");
+		addComponent(wrappedChart);
+		wrappedChart.setWidth("100%");
+		wrappedChart.setHeight("60%");
 		setWidth("100%");
 		setHeight("100%");
 	}
@@ -117,6 +124,10 @@ public class Chart<T extends Enum<T>> extends Panel {
 	}
 	
 	public void update(){
+		for (T series : type.getEnumConstants()) {
+			List<Integer> dataY = controller.calculate(data, type).getDataSeries(series);
+			updateSeries(wrappedChart, getSeriesName(series), dataY);
+		}
 		
 	}
 
@@ -163,6 +174,17 @@ public class Chart<T extends Enum<T>> extends Panel {
 		series.setSeriesPoints(getPoints(series, dataY));
 		chart.addSeries(series);
 	}
+	
+	private void updateSeries(InvientCharts chart, String seriesTitle, List<Integer> dataY) {
+//		XYSeries series = (XYSeries) chart.getSeries(seriesTitle);
+//		series.removeAllPoints();
+//		series.setSeriesPoints(getPoints(series, dataY));
+//		chart.refresh();
+		chart.removeSeries(seriesTitle);
+		XYSeries series = new XYSeries(seriesTitle);
+		series.setSeriesPoints(getPoints(series, dataY));
+		chart.addSeries(series);
+	}
 
 	private static LinkedHashSet<DecimalPoint> getPoints(Series series, List<Integer> values) {
 		LinkedHashSet<DecimalPoint> points = new LinkedHashSet<DecimalPoint>();
@@ -170,6 +192,12 @@ public class Chart<T extends Enum<T>> extends Panel {
 			points.add(new DecimalPoint(series, value));
 		}
 		return points;
+	}
+
+
+	public void valueChange(ValueChangeEvent event) {
+		update();
+		
 	}
 
 }

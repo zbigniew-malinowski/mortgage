@@ -15,9 +15,9 @@ public class InputData implements Serializable {
     private Double creditInterestRate = 6.0;
     private Double depositInterestRate = 5.0;
     private Integer flatPrice = 300000;
-    private Double flatPriceDynamic = 0.0;
-    private Integer administrativeRent = 500;
-    private Integer hiredFlatRent = 1000;
+    private Integer savings = 0;
+    private Integer flatCost = 500;
+    private Integer flatRent = 1000;
     
     public Integer getBudget() {
         return budget;
@@ -43,23 +43,23 @@ public class InputData implements Serializable {
     public void setFlatPrice(Integer flatPrice) {
         this.flatPrice = flatPrice;
     }
-    public Double getFlatPriceDynamic() {
-        return flatPriceDynamic;
-    }
-    public void setFlatPriceDynamic(Double flatPriceDynamic) {
-        this.flatPriceDynamic = flatPriceDynamic;
-    }
-    public Integer getAdministrativeRent() {
-        return administrativeRent;
-    }
-    public void setAdministrativeRent(Integer administrativeRent) {
-        this.administrativeRent = administrativeRent;
-    }
-    public Integer getHiredFlatRent() {
-        return hiredFlatRent;
-    }
-    public void setHiredFlatRent(Integer hiredFlatRent) {
-        this.hiredFlatRent = hiredFlatRent;
-    }
+	public Integer getSavings() {
+		return savings;
+	}
+	public void setSavings(Integer savings) {
+		this.savings = savings;
+	}
+	public Integer getFlatCost() {
+		return flatCost;
+	}
+	public void setFlatCost(Integer flatCost) {
+		this.flatCost = flatCost;
+	}
+	public Integer getFlatRent() {
+		return flatRent;
+	}
+	public void setFlatRent(Integer flatRent) {
+		this.flatRent = flatRent;
+	}
     
 }
