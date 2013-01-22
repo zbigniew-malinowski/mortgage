@@ -15,10 +15,28 @@
 	
 }
 
+.v-label {
+	margin-top: 5px;
+}
+
 .v-readonly, .v-textfield-readonly {
 	font-weight:bold;
 }
 
 .v-formlayout-contentcell {
 	text-align: left;
+}
+
+.v-textfield-error {
+	background : #ffebe8;
+}
+
+.v-errorindicator {
+	background: none;
+	width: 0px;
+	height: 0px;
+}
+
+.v-required-field-indicator{
+	color: #fff;
 }

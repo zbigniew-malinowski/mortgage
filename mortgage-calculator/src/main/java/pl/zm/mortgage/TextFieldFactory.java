@@ -10,20 +10,26 @@ import org.springframework.format.Formatter;
 import org.springframework.format.number.NumberFormatter;
 import org.vaadin.addon.customfield.CustomField;
 
+import pl.zm.mortgage.calc.InputData;
+
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
-import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
+import com.vaadin.data.Validator;
+import com.vaadin.data.Validator.InvalidValueException;
 import com.vaadin.data.util.PropertyFormatter;
+import com.vaadin.data.validator.DoubleValidator;
+import com.vaadin.data.validator.IntegerValidator;
+import com.vaadin.data.validator.NullValidator;
 import com.vaadin.event.FieldEvents.TextChangeEvent;
 import com.vaadin.event.FieldEvents.TextChangeListener;
+import com.vaadin.ui.AbstractTextField.TextChangeEventMode;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.DefaultFieldFactory;
 import com.vaadin.ui.Field;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.TextField;
-import com.vaadin.ui.AbstractTextField.TextChangeEventMode;
 
 class TextFieldFactory extends DefaultFieldFactory {
 
@@ -34,27 +40,34 @@ class TextFieldFactory extends DefaultFieldFactory {
 
 	private List<FormEditedListener> listeners = new LinkedList<TextFieldFactory.FormEditedListener>();
 	private MessageSource messageSource;
+	private InputData inputData;
 
-	public TextFieldFactory(MessageSource messageSource) {
+	public TextFieldFactory(MessageSource messageSource, InputData inputData) {
 		this.messageSource = messageSource;
+		this.inputData = inputData;
 	}
 
 	@Override
 	public Field createField(Item item, Object propertyId, Component uiContext) {
 
-		FormField tf = new FormField(item, propertyId);
-		tf.addListener(new ValueChangeListener() {
-
-			/**
-			 * 
-			 */
-			private static final long serialVersionUID = 2441370384729839091L;
-
-			public void valueChange(ValueChangeEvent event) {
-				fireValueChange();
-
-			}
-		});
+		final FormField tf = new FormField(item, propertyId);
+		// tf.addListener(new ValueChangeListener() {
+		//
+		// /**
+		// *
+		// */
+		// private static final long serialVersionUID = 2441370384729839091L;
+		//
+		// public void valueChange(ValueChangeEvent event) {
+		// try {
+		// tf.validate();
+		// } catch (InvalidValueException e) {
+		// return;
+		// }
+		// fireValueChange();
+		//
+		// }
+		// });
 
 		return tf;
 	}
@@ -76,6 +89,24 @@ class TextFieldFactory extends DefaultFieldFactory {
 
 		private Class<?> type;
 
+		private TextField wrapped;
+
+		@Override
+		public boolean isValid() {
+			return wrapped.isValid();
+		}
+		
+		@Override
+		public void validate() throws InvalidValueException {
+			requestRepaint();
+			wrapped.validate();
+		}
+		
+		@Override
+		public void commit() throws SourceException, InvalidValueException {
+			wrapped.commit();
+		}
+
 		public FormField(Item item, Object propertyId) {
 			String propertyName = (String) propertyId;
 			Property originalProperty = item.getItemProperty(propertyId);
@@ -85,23 +116,49 @@ class TextFieldFactory extends DefaultFieldFactory {
 			hl.setWidth("100%");
 			Label caption = new Label(getMessage(propertyName));
 			hl.addComponent(caption);
-			BeanPropertyFormatter dataSource = new BeanPropertyFormatter(originalProperty);
-			final TextField tf = new TextField(dataSource);
-			tf.setImmediate(true);
+			// BeanPropertyFormatter dataSource = new
+			// BeanPropertyFormatter(originalProperty);
+			Property dataSource = originalProperty;
+			wrapped = new TextField(dataSource);
+			wrapped.setImmediate(true);
+			wrapped.setRequired(true);
+			wrapped.setWriteThrough(true);
 			setPropertyDataSource(dataSource);
-			tf.setTextChangeEventMode(TextChangeEventMode.TIMEOUT);
-			tf.setTextChangeTimeout(500);
-			tf.addListener(new TextChangeListener() {
-				
-				private static final long serialVersionUID = 3713406843576017401L;
+			wrapped.setTextChangeEventMode(TextChangeEventMode.TIMEOUT);
+			wrapped.setTextChangeTimeout(500);
+			wrapped.addListener(new TextChangeListener() {
 
 				public void textChange(TextChangeEvent event) {
-					TextFieldFactory.this.fireValueChange();
+					wrapped.setValue(event.getText());
+//					form.commit()
+					if (wrapped.isValid())
+						TextFieldFactory.this.fireValueChange();
 				}
 			});
+			wrapped.addListener(new ValueChangeListener() {
+
+				public void valueChange(com.vaadin.data.Property.ValueChangeEvent event) {
+					// tf.validate();
+					// tf.setValue(event.getText());
+					// tf.commit();
+					// commit();
+//					if (wrapped.isValid())
+//						TextFieldFactory.this.fireValueChange();
+
+				}
+
+			});
+
+			wrapped.addValidator(getValidator(type));
+			if("flatPrice".equals(propertyName))
+				wrapped.addValidator(new PriceValidator(inputData));
+			if("budget".equals(propertyName))
+				wrapped.addValidator(new BudgetValidator(inputData));
+
+			wrapped.setValidationVisible(true);
 			
-			tf.setWidth("80px");
-			hl.addComponent(tf);
+			wrapped.setWidth("80px");
+			hl.addComponent(wrapped);
 			Label suffix = new Label(getSuffix(propertyName));
 			suffix.setWidth("30px");
 			hl.addComponent(suffix);
@@ -112,6 +169,14 @@ class TextFieldFactory extends DefaultFieldFactory {
 			setImmediate(true);
 			setWriteThrough(true);
 			setWidth("300px");
+		}
+
+		private Validator getValidator(Class<?> type2) {
+			if (Integer.class.equals(type2))
+				return new IntegerValidator("Zły integer");
+			if (Double.class.equals(type2))
+				return new DoubleValidator("Zły double");
+			return new NullValidator("null!", false);
 		}
 
 		private String getSuffix(String propertyName) {

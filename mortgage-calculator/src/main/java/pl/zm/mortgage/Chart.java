@@ -11,7 +11,9 @@ import org.springframework.context.MessageSource;
 import pl.zm.mortgage.TextFieldFactory.FormEditedListener;
 import pl.zm.mortgage.calc.Controller;
 import pl.zm.mortgage.calc.InputData;
+import pl.zm.mortgage.calc.Calculations.InvalidDataException;
 
+import com.invient.vaadin.charts.Color;
 import com.invient.vaadin.charts.Color.RGB;
 import com.invient.vaadin.charts.InvientCharts;
 import com.invient.vaadin.charts.InvientCharts.DecimalPoint;
@@ -26,6 +28,7 @@ import com.invient.vaadin.charts.InvientChartsConfig.AxisBase.TickmarkPlacement;
 import com.invient.vaadin.charts.InvientChartsConfig.CategoryAxis;
 import com.invient.vaadin.charts.InvientChartsConfig.MarkerState;
 import com.invient.vaadin.charts.InvientChartsConfig.NumberYAxis;
+import com.invient.vaadin.charts.InvientChartsConfig.SeriesConfig;
 import com.invient.vaadin.charts.InvientChartsConfig.Stacking;
 import com.invient.vaadin.charts.InvientChartsConfig.SymbolMarker;
 import com.invient.vaadin.charts.InvientChartsConfig.SymbolMarker.Symbol;
@@ -33,9 +36,11 @@ import com.invient.vaadin.charts.InvientChartsConfig.Tooltip;
 import com.invient.vaadin.charts.InvientChartsConfig.XAxis;
 import com.invient.vaadin.charts.InvientChartsConfig.YAxis;
 import com.invient.vaadin.charts.InvientChartsConfig.YAxisDataLabel;
+import com.invient.vaadin.charts.Paint;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.ui.Panel;
+import com.vaadin.ui.Window.Notification;
 
 @Configurable(preConstruction = true)
 public class Chart<T extends Enum<T>> extends Panel implements FormEditedListener {
@@ -49,6 +54,19 @@ public class Chart<T extends Enum<T>> extends Panel implements FormEditedListene
 	private InvientCharts wrappedChart;
 	private InputData data;
 
+	private enum Colors {
+		BLUE("4572a7"),
+		RED("aa4643"),
+		GREEN("89a54e");
+	
+		private String color;
+		
+		private Colors(String hex){
+			this.color = hex;
+		}
+		
+	}
+	
 	public Chart(BeanItem<InputData> item, Class<T> type, Controller controller, MessageSource messageSource) {
 
 		this.controller = controller;
@@ -108,7 +126,7 @@ public class Chart<T extends Enum<T>> extends Panel implements FormEditedListene
 		for (T series : type.getEnumConstants()) {
 
 			List<Integer> dataY = controller.calculate(new InputData(), type).getDataSeries(series);
-			addSeries(wrappedChart, getSeriesName(series), dataY);
+			addSeries(wrappedChart, getSeriesName(series), dataY, getSeriesColor(series));
 		}
 
 		addComponent(wrappedChart);
@@ -117,6 +135,19 @@ public class Chart<T extends Enum<T>> extends Panel implements FormEditedListene
 		setWidth("100%");
 		setHeight("100%");
 	}
+	
+
+	private Paint getSeriesColor(T series) {
+		return createColor("4572a7");
+	}
+	
+	private static Paint createColor(String hex){
+		
+		int red = Integer.decode("#" + hex.substring(0, 2));
+		int blue= Integer.decode("#" + hex.substring(4, 6));
+		int green = Integer.decode("#" + hex.substring(2, 4));
+		return new Color.RGB(red, green, blue);
+	}
 
 	private String getSeriesName(T series) {
 		String name = series.name().toLowerCase();
@@ -124,9 +155,13 @@ public class Chart<T extends Enum<T>> extends Panel implements FormEditedListene
 	}
 	
 	public void update(){
-		for (T series : type.getEnumConstants()) {
-			List<Integer> dataY = controller.calculate(data, type).getDataSeries(series);
-			updateSeries(wrappedChart, getSeriesName(series), dataY);
+		try {
+			for (T series : type.getEnumConstants()) {
+				List<Integer> dataY = controller.calculate(data, type).getDataSeries(series);
+				updateSeries(wrappedChart, getSeriesName(series), dataY);
+			}
+		} catch (InvalidDataException e) {
+			getWindow().showNotification(e.getMessage(), Notification.TYPE_WARNING_MESSAGE);
 		}
 		
 	}
@@ -169,19 +204,23 @@ public class Chart<T extends Enum<T>> extends Panel implements FormEditedListene
 		return getMessage("title", null);
 	}
 
-	private void addSeries(InvientCharts chart, String seriesTitle, List<Integer> dataY) {
-		XYSeries series = new XYSeries(seriesTitle);
+	private void addSeries(InvientCharts chart, String seriesTitle, List<Integer> dataY, Paint color) {
+		SeriesConfig config = new SeriesConfig();
+		config.setColor(color);
+		XYSeries series = new XYSeries(seriesTitle, config );
 		series.setSeriesPoints(getPoints(series, dataY));
 		chart.addSeries(series);
 	}
 	
 	private void updateSeries(InvientCharts chart, String seriesTitle, List<Integer> dataY) {
-//		XYSeries series = (XYSeries) chart.getSeries(seriesTitle);
+		XYSeries series = (XYSeries) chart.getSeries(seriesTitle);
 //		series.removeAllPoints();
 //		series.setSeriesPoints(getPoints(series, dataY));
 //		chart.refresh();
+		SeriesConfig c = series.getConfig();
+		
 		chart.removeSeries(seriesTitle);
-		XYSeries series = new XYSeries(seriesTitle);
+		series = new XYSeries(seriesTitle, c);
 		series.setSeriesPoints(getPoints(series, dataY));
 		chart.addSeries(series);
 	}

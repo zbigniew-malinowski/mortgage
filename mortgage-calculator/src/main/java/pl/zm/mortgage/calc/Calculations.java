@@ -11,8 +11,18 @@ public class Calculations {
     
     public static final int MAX_INSTALLMENTS_COUNT = 360;
     public static final int MAX_RENT_TIME = 120;
+    
 
-    public static int calculateInstallmentsCount(int capital, double annualInterestRate, int installment) {
+    public static class InvalidDataException extends RuntimeException {
+
+		private static final long serialVersionUID = -6351352994497964602L;
+
+		public InvalidDataException(final String message){
+    		super(message);
+    	}
+    }
+    
+    public static int calculateInstallmentsCount(int capital, double annualInterestRate, int installment) throws InvalidDataException {
 
     	if(capital <= 0)
     		return 0;
@@ -20,12 +30,12 @@ public class Calculations {
         for (int installmentNr = 1; installmentNr <= MAX_INSTALLMENTS_COUNT; installmentNr++) {
             int interest = calculateInterest(capital, annualInterestRate);
             if (installment <= interest)
-                throw new IllegalStateException("Incorrect installment");
+                throw new InvalidDataException("Incorrect installment");
             capital = capital - (installment - interest);
             if (capital <= 0)
                 return installmentNr;
         }
-        throw new IllegalStateException("Incorrect capital");
+        throw new InvalidDataException("Incorrect capital");
     }
 
     public static int calculateCreditInterest(int capital, int installment, int installmentsCount) {
@@ -52,10 +62,12 @@ public class Calculations {
         return BigDecimal.valueOf(capital).multiply(ir).intValue();
     }
 
-    public static int calculateCapital(BigDecimal annualInterestRate, BigDecimal installment, int installmentsCount) {
-        BigDecimal ir = annualInterestRate.divide(TWELVE, MathContext.DECIMAL64);
+    public static int calculateCapital(double annualInterestRate, int installment, int installmentsCount) {
+    	BigDecimal ir = new BigDecimal("" + annualInterestRate).divide(HUNDRED, MathContext.DECIMAL64);
+        ir = ir.divide(TWELVE, MathContext.DECIMAL64);
         BigDecimal pow = BigDecimal.ONE.add(ir).pow(installmentsCount);
-        return installment.divide(ir, RoundingMode.HALF_UP).multiply(BigDecimal.ONE.subtract(pow)).intValue();
+//        return BigDecimal.valueOf(installment).divide(ir, RoundingMode.HALF_UP).multiply(BigDecimal.ONE.subtract(pow)).intValue();
+        return BigDecimal.valueOf(installment).multiply(pow.subtract(BigDecimal.ONE)).divide(ir.multiply(pow), MathContext.DECIMAL64).intValue();
     }
 
     public static int calculateDepositValue(int monthlyCommitment, double annualInterestRate, int installmentsCount) {

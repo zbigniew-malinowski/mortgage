@@ -12,7 +12,7 @@ public class Controller implements Serializable {
 	private static final long serialVersionUID = -1618425494587714741L;
 
 	@SuppressWarnings("unchecked")
-	public <T extends Enum<T>>ChartData<T> calculate(InputData input, Class<T> type){
+	public <T extends Enum<T>>ChartData<T> calculate(InputData input, Class<T> type) {
 		Map<Class<? extends Enum<?>>, ChartData<?>> map = new HashMap<Class<? extends Enum<?>>, ChartData<?>>();
 		
 		ChartData<Money> money = new ChartData<Money>(Money.class);
@@ -45,7 +45,7 @@ public class Controller implements Serializable {
         
         return (ChartData<T>) map.get(type);
     }
-	
+
 	
 	
 }

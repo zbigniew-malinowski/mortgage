@@ -5,19 +5,27 @@ import java.util.Collection;
 
 import org.springframework.context.MessageSource;
 
+import pl.zm.mortgage.TextFieldFactory.FormEditedListener;
 import pl.zm.mortgage.calc.Controller;
 import pl.zm.mortgage.calc.InputData;
 import pl.zm.mortgage.calc.Money;
 import pl.zm.mortgage.calc.Time;
 
 import com.vaadin.Application;
+import com.vaadin.data.Buffered.SourceException;
+import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.data.Validator.InvalidValueException;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.terminal.Sizeable;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Form;
 import com.vaadin.ui.HorizontalSplitPanel;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
+import com.vaadin.ui.themes.BaseTheme;
 
 public class MortgageCalculator extends Application {
 
@@ -56,14 +64,18 @@ public class MortgageCalculator extends Application {
 		dataPanel.setHeight("100%");
 
 		final Form form = new Form();
-		TextFieldFactory tff = new TextFieldFactory(messageSource);
-		form.setFormFieldFactory(tff);
 		InputData input = new InputData();
+		TextFieldFactory tff = new TextFieldFactory(messageSource, input);
+		form.setFormFieldFactory(tff);
 		BeanItem<InputData> item = new BeanItem<InputData>(input);
 		form.setItemDataSource(item);
 		form.setVisibleItemProperties(FORM_FIELDS);
-		form.setImmediate(true);
+//		form.setImmediate(true);
+		form.setInvalidCommitted(false);
+		form.setValidationVisible(false);
 		dataPanel.addComponent(form);
+		
+		
 		split.setFirstComponent(dataPanel);
 	
 		charts = new VerticalLayout();
@@ -72,14 +84,27 @@ public class MortgageCalculator extends Application {
 		charts.setWidth("100%");
 		split.setSplitPosition(350, Sizeable.UNITS_PIXELS);
 
-		Chart<Money> moneyChart = new Chart<Money>(item, Money.class, controller, messageSource);
-		Chart<Time> timeChart = new Chart<Time>(item, Time.class, controller, messageSource);
+		final Chart<Money> moneyChart = new Chart<Money>(item, Money.class, controller, messageSource);
+		final Chart<Time> timeChart = new Chart<Time>(item, Time.class, controller, messageSource);
 		
-		tff.addListener(moneyChart);
-		tff.addListener(timeChart);
+//		tff.addListener(moneyChart);
+//		tff.addListener(timeChart);
+		tff.addListener(new FormEditedListener() {
+			
+			public void valueChange(ValueChangeEvent event) {
+				try {
+					form.commit();
+				} catch (InvalidValueException e) {
+					return;
+				}
+				moneyChart.valueChange(null);
+				timeChart.valueChange(null);
+			}
+		});
 		
 		charts.addComponent(moneyChart);
 		charts.addComponent(timeChart);
+		
 	}
 	
 	
