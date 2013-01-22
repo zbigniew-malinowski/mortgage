@@ -131,7 +131,7 @@ public class Chart<T extends Enum<T>> extends Panel implements FormEditedListene
 		int red = Integer.decode("#" + hex.substring(0, 2));
 		int blue= Integer.decode("#" + hex.substring(4, 6));
 		int green = Integer.decode("#" + hex.substring(2, 4));
-		return new Color.RGB(red, green, blue);
+		return new Color.RGBA(red, green, blue, 0.5f);
 	}
 
 	private String getSeriesName(T series) {

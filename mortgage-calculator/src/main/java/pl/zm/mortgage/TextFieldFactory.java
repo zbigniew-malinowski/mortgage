@@ -51,24 +51,6 @@ class TextFieldFactory extends DefaultFieldFactory {
 	public Field createField(Item item, Object propertyId, Component uiContext) {
 
 		final FormField tf = new FormField(item, propertyId);
-		// tf.addListener(new ValueChangeListener() {
-		//
-		// /**
-		// *
-		// */
-		// private static final long serialVersionUID = 2441370384729839091L;
-		//
-		// public void valueChange(ValueChangeEvent event) {
-		// try {
-		// tf.validate();
-		// } catch (InvalidValueException e) {
-		// return;
-		// }
-		// fireValueChange();
-		//
-		// }
-		// });
-
 		return tf;
 	}
 
@@ -116,8 +98,6 @@ class TextFieldFactory extends DefaultFieldFactory {
 			hl.setWidth("100%");
 			Label caption = new Label(getMessage(propertyName));
 			hl.addComponent(caption);
-			// BeanPropertyFormatter dataSource = new
-			// BeanPropertyFormatter(originalProperty);
 			Property dataSource = originalProperty;
 			wrapped = new TextField(dataSource);
 			wrapped.setImmediate(true);
@@ -125,12 +105,11 @@ class TextFieldFactory extends DefaultFieldFactory {
 			wrapped.setWriteThrough(true);
 			setPropertyDataSource(dataSource);
 			wrapped.setTextChangeEventMode(TextChangeEventMode.TIMEOUT);
-			wrapped.setTextChangeTimeout(500);
+			wrapped.setTextChangeTimeout(1000);
 			wrapped.addListener(new TextChangeListener() {
 
 				public void textChange(TextChangeEvent event) {
 					wrapped.setValue(event.getText());
-//					form.commit()
 					if (wrapped.isValid())
 						TextFieldFactory.this.fireValueChange();
 				}
@@ -138,12 +117,6 @@ class TextFieldFactory extends DefaultFieldFactory {
 			wrapped.addListener(new ValueChangeListener() {
 
 				public void valueChange(com.vaadin.data.Property.ValueChangeEvent event) {
-					// tf.validate();
-					// tf.setValue(event.getText());
-					// tf.commit();
-					// commit();
-//					if (wrapped.isValid())
-//						TextFieldFactory.this.fireValueChange();
 
 				}
 

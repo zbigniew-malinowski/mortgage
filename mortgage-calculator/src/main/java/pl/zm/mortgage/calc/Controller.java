@@ -20,7 +20,8 @@ public class Controller implements Serializable {
 		map.put(Money.class, money);
 		map.put(Time.class, time);
         
-        int capital = input.getFlatPrice();
+        int savings = input.getSavings();
+		int capital = input.getFlatPrice();
         double creditIr = input.getCreditInterestRate();
         double depositIr = input.getDepositInterestRate();
         int installment = input.getBudget() - input.getFlatCost();
@@ -28,8 +29,10 @@ public class Controller implements Serializable {
         
         for (int rentTime = 0; rentTime <= Calculations.MAX_RENT_TIME; rentTime+=12) {
             
-        	int depositValue = Calculations.calculateDepositValue(monthlyCommitment, depositIr, rentTime);
+        	int depositValue = Calculations.calculateDepositValue(savings, monthlyCommitment, depositIr, rentTime);
             int creditCapital = Math.max(capital - depositValue, 0);
+            if(creditCapital == 0)
+            	break;
             int installmentsCount = Calculations.calculateInstallmentsCount(creditCapital, creditIr, installment);
             int creditInterest = Calculations.calculateCreditInterest(creditCapital, installment, installmentsCount);
             

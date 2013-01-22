@@ -70,12 +70,13 @@ public class Calculations {
         return BigDecimal.valueOf(installment).multiply(pow.subtract(BigDecimal.ONE)).divide(ir.multiply(pow), MathContext.DECIMAL64).intValue();
     }
 
-    public static int calculateDepositValue(int monthlyCommitment, double annualInterestRate, int installmentsCount) {
+    public static int calculateDepositValue(int initialSavings, int monthlyCommitment, double annualInterestRate, int installmentsCount) {
         BigDecimal ir = new BigDecimal("" + annualInterestRate).divide(HUNDRED, MathContext.DECIMAL64);
         ir = ir.divide(TWELVE, MathContext.DECIMAL64);
         BigDecimal q = ir.add(BigDecimal.ONE);
-        BigDecimal factor = BigDecimal.ONE.subtract(q.pow(installmentsCount)).divide(BigDecimal.ONE.subtract(q), RoundingMode.HALF_UP);
-        return factor.multiply(BigDecimal.valueOf(monthlyCommitment)).intValue();
+        BigDecimal factor1 = BigDecimal.ONE.subtract(q.pow(installmentsCount)).divide(BigDecimal.ONE.subtract(q), RoundingMode.HALF_UP);
+        int savingsValue = BigDecimal.valueOf(initialSavings).multiply(q.pow(installmentsCount)).intValue();
+        return factor1.multiply(BigDecimal.valueOf(monthlyCommitment)).intValue() + savingsValue;
     }
     
     public static int formatAmountKpln(int number) {

@@ -20,7 +20,7 @@ public class CalculationsTest {
         int ic = 12;
         int monthlyCommitment = 1000;
         double ir = 5;
-        int depositValue = Calculations.calculateDepositValue(monthlyCommitment, ir, ic);
+        int depositValue = Calculations.calculateDepositValue(0, monthlyCommitment, ir, ic);
         Assert.assertEquals(12278, depositValue);
     }
 }
