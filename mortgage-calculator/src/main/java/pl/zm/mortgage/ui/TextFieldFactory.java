@@ -1,4 +1,4 @@
-package pl.zm.mortgage;
+package pl.zm.mortgage.ui;
 
 import java.util.LinkedList;
 import java.util.List;

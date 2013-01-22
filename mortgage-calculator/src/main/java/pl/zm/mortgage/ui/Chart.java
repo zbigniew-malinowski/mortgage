@@ -1,4 +1,4 @@
-package pl.zm.mortgage;
+package pl.zm.mortgage.ui;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -8,10 +8,10 @@ import java.util.Locale;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.MessageSource;
 
-import pl.zm.mortgage.TextFieldFactory.FormEditedListener;
 import pl.zm.mortgage.calc.Controller;
 import pl.zm.mortgage.calc.InputData;
 import pl.zm.mortgage.calc.Calculations.InvalidDataException;
+import pl.zm.mortgage.ui.TextFieldFactory.FormEditedListener;
 
 import com.invient.vaadin.charts.Color;
 import com.invient.vaadin.charts.Color.RGB;

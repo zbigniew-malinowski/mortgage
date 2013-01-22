@@ -1,15 +1,16 @@
-package pl.zm.mortgage;
+package pl.zm.mortgage.ui;
 
 import java.util.Arrays;
 import java.util.Collection;
 
 import org.springframework.context.MessageSource;
 
-import pl.zm.mortgage.TextFieldFactory.FormEditedListener;
 import pl.zm.mortgage.calc.Controller;
 import pl.zm.mortgage.calc.InputData;
 import pl.zm.mortgage.calc.Money;
 import pl.zm.mortgage.calc.Time;
+import pl.zm.mortgage.ui.TextFieldFactory.FormEditedListener;
+import pl.zm.mortgage.util.SpringContextHelper;
 
 import com.vaadin.Application;
 import com.vaadin.data.Property.ValueChangeEvent;

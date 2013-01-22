@@ -1,4 +1,4 @@
-package pl.zm.mortgage;
+package pl.zm.mortgage.util;
 
 import com.vaadin.Application;
 import com.vaadin.terminal.gwt.server.WebApplicationContext;

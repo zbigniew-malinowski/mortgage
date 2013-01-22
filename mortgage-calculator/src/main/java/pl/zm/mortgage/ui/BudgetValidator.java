@@ -1,4 +1,4 @@
-package pl.zm.mortgage;
+package pl.zm.mortgage.ui;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -7,7 +7,7 @@ import pl.zm.mortgage.calc.InputData;
 
 import com.vaadin.data.Validator;
 
-public class PriceValidator implements Validator{
+public class BudgetValidator implements Validator{
 
 	private static final long serialVersionUID = 1L;
 
@@ -15,7 +15,7 @@ public class PriceValidator implements Validator{
 	
 	private static final NumberFormat nf = new DecimalFormat("#,###");
 	
-	public PriceValidator(InputData inputData) {
+	public BudgetValidator(InputData inputData) {
 		this.inputData = inputData;
 	}
 
@@ -26,12 +26,8 @@ public class PriceValidator implements Validator{
 		} catch (NumberFormatException e) {
 			return ;
 		}
-		int maxPrice = inputData.getMaxPrice()/1000;
-		if(maxPrice == 0)
-			throw new InvalidValueException("Zbyt mały budżet" );
-		
 		if(!isValid(value))
-			throw new InvalidValueException("Maksymalna cena przy obecnych warunkach to " + maxPrice  +" 000 zł" );
+			throw new InvalidValueException("Budżet nie może być niższy od ceny czynszu ani kosztu wynajmu" );
 		
 	}
 
@@ -42,7 +38,7 @@ public class PriceValidator implements Validator{
 		} catch (NumberFormatException e) {
 			return false;
 		}
-		return inputData.validatePrice(val);
+		return inputData.validateBudget(val);
 	}
 
 	
