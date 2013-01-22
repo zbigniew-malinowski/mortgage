@@ -1,4 +1,4 @@
-@import url(../reindeer/styles.css);
+@import url(../runo/styles.css);
 
 .v-formlayout-captioncell {
 	text-align: left;
@@ -38,5 +38,9 @@
 }
 
 .v-required-field-indicator{
-	color: #fff;
+	visibility: hidden;
+}
+
+.title-label {
+	font-size: 20px;
 }

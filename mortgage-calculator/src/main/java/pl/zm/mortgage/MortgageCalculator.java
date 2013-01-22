@@ -12,26 +12,24 @@ import pl.zm.mortgage.calc.Money;
 import pl.zm.mortgage.calc.Time;
 
 import com.vaadin.Application;
-import com.vaadin.data.Buffered.SourceException;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Validator.InvalidValueException;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.terminal.Sizeable;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Form;
+import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.HorizontalSplitPanel;
+import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
-import com.vaadin.ui.themes.BaseTheme;
 
 public class MortgageCalculator extends Application {
 
 	private static final long serialVersionUID = -7128604913110613494L;
 
-	private static final Collection<?> FORM_FIELDS = Arrays.asList("budget", "flatPrice", "flatCost", "flatRent", "creditInterestRate", "depositInterestRate");
+	private static final Collection<?> FORM_FIELDS = Arrays.asList("budget", "flatPrice", "savings", "flatCost", "flatRent", "creditInterestRate", "depositInterestRate");
 	
 	private VerticalLayout charts;
 	
@@ -55,7 +53,19 @@ public class MortgageCalculator extends Application {
 		
 		HorizontalSplitPanel split = new HorizontalSplitPanel();
 		split.setSizeFull();
-		mainLayout.addComponent(split);
+		HorizontalLayout title = new HorizontalLayout();
+		title.setHeight("100px");
+		
+		Label titleLabel = new Label("<big>Kupić czy wynająć?</big>");
+		titleLabel.setContentMode(Label.CONTENT_XHTML);
+		titleLabel.setSizeUndefined();
+		titleLabel.setStyleName("title-label"); 
+        title.addComponent(titleLabel);
+		
+        mainLayout.addComponent(title);
+        mainLayout.setComponentAlignment(title, Alignment.MIDDLE_CENTER);
+        title.setComponentAlignment(titleLabel, Alignment.MIDDLE_CENTER);
+        mainLayout.addComponent(split);
 		mainLayout.setExpandRatio(split, 1);
 		
 		

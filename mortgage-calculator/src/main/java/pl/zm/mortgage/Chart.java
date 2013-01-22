@@ -53,19 +53,6 @@ public class Chart<T extends Enum<T>> extends Panel implements FormEditedListene
 
 	private InvientCharts wrappedChart;
 	private InputData data;
-
-	private enum Colors {
-		BLUE("4572a7"),
-		RED("aa4643"),
-		GREEN("89a54e");
-	
-		private String color;
-		
-		private Colors(String hex){
-			this.color = hex;
-		}
-		
-	}
 	
 	public Chart(BeanItem<InputData> item, Class<T> type, Controller controller, MessageSource messageSource) {
 
@@ -130,15 +117,13 @@ public class Chart<T extends Enum<T>> extends Panel implements FormEditedListene
 		}
 
 		addComponent(wrappedChart);
-		wrappedChart.setWidth("100%");
-		wrappedChart.setHeight("60%");
-		setWidth("100%");
-		setHeight("100%");
+		wrappedChart.setSizeFull();
+		setSizeUndefined();
 	}
 	
 
 	private Paint getSeriesColor(T series) {
-		return createColor("4572a7");
+		return createColor(getMessage("series.color." + series.name().toLowerCase(), null));
 	}
 	
 	private static Paint createColor(String hex){
