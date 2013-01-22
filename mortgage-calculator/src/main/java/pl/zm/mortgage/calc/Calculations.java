@@ -13,16 +13,7 @@ public class Calculations {
     public static final int MAX_RENT_TIME = 120;
     
 
-    public static class InvalidDataException extends RuntimeException {
-
-		private static final long serialVersionUID = -6351352994497964602L;
-
-		public InvalidDataException(final String message){
-    		super(message);
-    	}
-    }
-    
-    public static int calculateInstallmentsCount(int capital, double annualInterestRate, int installment) throws InvalidDataException {
+    public static int calculateInstallmentsCount(int capital, double annualInterestRate, int installment) {
 
     	if(capital <= 0)
     		return 0;
@@ -30,12 +21,12 @@ public class Calculations {
         for (int installmentNr = 1; installmentNr <= MAX_INSTALLMENTS_COUNT; installmentNr++) {
             int interest = calculateInterest(capital, annualInterestRate);
             if (installment <= interest)
-                throw new InvalidDataException("Incorrect installment");
+                throw new IllegalStateException("Incorrect installment");
             capital = capital - (installment - interest);
             if (capital <= 0)
                 return installmentNr;
         }
-        throw new InvalidDataException("Incorrect capital");
+        throw new IllegalStateException("Incorrect capital");
     }
 
     public static int calculateCreditInterest(int capital, int installment, int installmentsCount) {
@@ -66,7 +57,6 @@ public class Calculations {
     	BigDecimal ir = new BigDecimal("" + annualInterestRate).divide(HUNDRED, MathContext.DECIMAL64);
         ir = ir.divide(TWELVE, MathContext.DECIMAL64);
         BigDecimal pow = BigDecimal.ONE.add(ir).pow(installmentsCount);
-//        return BigDecimal.valueOf(installment).divide(ir, RoundingMode.HALF_UP).multiply(BigDecimal.ONE.subtract(pow)).intValue();
         return BigDecimal.valueOf(installment).multiply(pow.subtract(BigDecimal.ONE)).divide(ir.multiply(pow), MathContext.DECIMAL64).intValue();
     }
 
@@ -81,6 +71,5 @@ public class Calculations {
     
     public static int formatAmountKpln(int number) {
 		return (int) Math.round(number /1000.0); 
-//    	return number;
 	}
 }

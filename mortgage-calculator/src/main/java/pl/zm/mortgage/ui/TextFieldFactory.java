@@ -4,20 +4,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
-import org.springframework.context.MessageSource;
 import org.springframework.context.NoSuchMessageException;
-import org.springframework.format.Formatter;
-import org.springframework.format.number.NumberFormatter;
 import org.vaadin.addon.customfield.CustomField;
 
 import pl.zm.mortgage.calc.InputData;
+import pl.zm.mortgage.util.SerializableMessageSource;
 
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.Validator;
 import com.vaadin.data.Validator.InvalidValueException;
-import com.vaadin.data.util.PropertyFormatter;
 import com.vaadin.data.validator.DoubleValidator;
 import com.vaadin.data.validator.IntegerValidator;
 import com.vaadin.data.validator.NullValidator;
@@ -33,16 +30,13 @@ import com.vaadin.ui.TextField;
 
 class TextFieldFactory extends DefaultFieldFactory {
 
-	private Formatter<Number> intFormatter = new NumberFormatter("#,###");
-	private Formatter<Number> doubleFormatter = new NumberFormatter("#0.00");
-
 	private static final long serialVersionUID = 1887933063943628642L;
 
 	private List<FormEditedListener> listeners = new LinkedList<TextFieldFactory.FormEditedListener>();
-	private MessageSource messageSource;
+	private SerializableMessageSource messageSource;
 	private InputData inputData;
 
-	public TextFieldFactory(MessageSource messageSource, InputData inputData) {
+	public TextFieldFactory(SerializableMessageSource messageSource, InputData inputData) {
 		this.messageSource = messageSource;
 		this.inputData = inputData;
 	}
@@ -50,8 +44,7 @@ class TextFieldFactory extends DefaultFieldFactory {
 	@Override
 	public Field createField(Item item, Object propertyId, Component uiContext) {
 
-		final FormField tf = new FormField(item, propertyId);
-		return tf;
+		return new FormField(item, propertyId);
 	}
 
 	protected void fireValueChange() {
@@ -67,23 +60,25 @@ class TextFieldFactory extends DefaultFieldFactory {
 
 	private class FormField extends CustomField {
 
+		private static final String ERROR_INTEGER = "error.integer";
+		private static final String ERROR_DOUBLE = "error.double";
+		private static final String SUFFIX = "suffix.";
+
 		private static final long serialVersionUID = -5021367534319732659L;
 
 		private Class<?> type;
-
 		private TextField wrapped;
 
 		@Override
 		public boolean isValid() {
 			return wrapped.isValid();
 		}
-		
+
 		@Override
 		public void validate() throws InvalidValueException {
-			requestRepaint();
 			wrapped.validate();
 		}
-		
+
 		@Override
 		public void commit() throws SourceException, InvalidValueException {
 			wrapped.commit();
@@ -91,22 +86,19 @@ class TextFieldFactory extends DefaultFieldFactory {
 
 		public FormField(Item item, Object propertyId) {
 			String propertyName = (String) propertyId;
-			Property originalProperty = item.getItemProperty(propertyId);
-			this.type = (Class<?>) originalProperty.getType();
+			Property dataSource = item.getItemProperty(propertyId);
+			this.type = (Class<?>) dataSource.getType();
 
-			HorizontalLayout hl = new HorizontalLayout();
-			hl.setWidth("100%");
-			Label caption = new Label(getMessage(propertyName));
-			hl.addComponent(caption);
-			Property dataSource = originalProperty;
 			wrapped = new TextField(dataSource);
 			wrapped.setImmediate(true);
 			wrapped.setRequired(true);
 			wrapped.setWriteThrough(true);
-			setPropertyDataSource(dataSource);
+			wrapped.setPropertyDataSource(dataSource);
 			wrapped.setTextChangeEventMode(TextChangeEventMode.TIMEOUT);
 			wrapped.setTextChangeTimeout(1000);
 			wrapped.addListener(new TextChangeListener() {
+
+				private static final long serialVersionUID = 6554742203409307004L;
 
 				public void textChange(TextChangeEvent event) {
 					wrapped.setValue(event.getText());
@@ -114,92 +106,42 @@ class TextFieldFactory extends DefaultFieldFactory {
 						TextFieldFactory.this.fireValueChange();
 				}
 			});
-			wrapped.addListener(new ValueChangeListener() {
 
-				public void valueChange(com.vaadin.data.Property.ValueChangeEvent event) {
+			addValidation(propertyName);
 
-				}
-
-			});
-
-			wrapped.addValidator(getValidator(type));
-			if("flatPrice".equals(propertyName))
-				wrapped.addValidator(new PriceValidator(inputData));
-			if("budget".equals(propertyName))
-				wrapped.addValidator(new BudgetValidator(inputData));
-
-			wrapped.setValidationVisible(true);
-			
 			wrapped.setWidth("80px");
-			hl.addComponent(wrapped);
-			Label suffix = new Label(getSuffix(propertyName));
+			
+			Label suffix = new Label(messageSource.getMessage(SUFFIX + propertyName));
 			suffix.setWidth("30px");
+			
+			HorizontalLayout hl = new HorizontalLayout();
+			Label caption = new Label(messageSource.getMessage(propertyName));
+			hl.addComponent(caption);
+			hl.setWidth("100%");
+			hl.addComponent(wrapped);
 			hl.addComponent(suffix);
 			hl.setSpacing(true);
 			hl.setExpandRatio(caption, 1.0f);
 			setCompositionRoot(hl);
 
-			setImmediate(true);
-			setWriteThrough(true);
 			setWidth("300px");
 		}
 
-		private Validator getValidator(Class<?> type2) {
-			if (Integer.class.equals(type2))
-				return new IntegerValidator("Zły integer");
-			if (Double.class.equals(type2))
-				return new DoubleValidator("Zły double");
-			return new NullValidator("null!", false);
-		}
-
-		private String getSuffix(String propertyName) {
-			return getMessage("suffix." + propertyName);
-		}
-
-		private String getMessage(String code) {
-			try {
-				return messageSource.getMessage(code, null, Locale.getDefault());
-			} catch (NoSuchMessageException e) {
-				return code;
-			}
+		private void addValidation(String propertyName) {
+			if (Integer.class.equals(type))
+				wrapped.addValidator(new IntegerValidator(messageSource.getMessage(ERROR_INTEGER)));
+			if (Double.class.equals(type))
+				wrapped.addValidator(new DoubleValidator(ERROR_DOUBLE));
+			if ("flatPrice".equals(propertyName))
+				wrapped.addValidator(new PriceValidator(inputData));
+			if ("budget".equals(propertyName))
+				wrapped.addValidator(new BudgetValidator(inputData));
+			wrapped.setValidationVisible(true);
 		}
 
 		@Override
 		public Class<?> getType() {
 			return type;
-		}
-
-	}
-
-	@SuppressWarnings("unchecked")
-	private class BeanPropertyFormatter extends PropertyFormatter {
-
-		private Class<Number> type = Number.class;
-
-		private static final long serialVersionUID = -4406098394615950241L;
-
-		public BeanPropertyFormatter(Property itemProperty) {
-			super(itemProperty);
-			this.type = (Class<Number>) itemProperty.getType();
-
-		}
-
-		@Override
-		public Object parse(String formattedValue) throws Exception {
-			return getFormatter(type).parse(formattedValue, Locale.getDefault());
-		}
-
-		private Formatter<Number> getFormatter(Class<Number> type) {
-			if ((Double.class.equals(type)))
-				return doubleFormatter;
-			return intFormatter;
-
-		}
-
-		@Override
-		public String format(Object value) {
-			Number number = (Number) value;
-			return getFormatter(type).print(number, Locale.getDefault());
 		}
 
 	}
