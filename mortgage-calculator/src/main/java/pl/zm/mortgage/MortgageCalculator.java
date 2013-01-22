@@ -15,15 +15,13 @@ import com.vaadin.Application;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Validator.InvalidValueException;
 import com.vaadin.data.util.BeanItem;
-import com.vaadin.terminal.Sizeable;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Form;
 import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.HorizontalSplitPanel;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Panel;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
+import com.vaadin.ui.themes.Runo;
 
 public class MortgageCalculator extends Application {
 
@@ -45,14 +43,15 @@ public class MortgageCalculator extends Application {
 		
 		Window window = new Window();
 		setMainWindow(window);
-		window.setSizeFull();
+		window.setSizeUndefined();
 		VerticalLayout mainLayout = new VerticalLayout();
 		window.setContent(mainLayout);
-		mainLayout.setSizeFull();
+		mainLayout.setWidth("100%");
+		mainLayout.setHeight(null);
 		setTheme("mortgage");
 		
-		HorizontalSplitPanel split = new HorizontalSplitPanel();
-		split.setSizeFull();
+//		HorizontalSplitPanel split = new HorizontalSplitPanel();
+//		split.setSizeFull();
 		HorizontalLayout title = new HorizontalLayout();
 		title.setHeight("100px");
 		
@@ -65,11 +64,11 @@ public class MortgageCalculator extends Application {
         mainLayout.addComponent(title);
         mainLayout.setComponentAlignment(title, Alignment.MIDDLE_CENTER);
         title.setComponentAlignment(titleLabel, Alignment.MIDDLE_CENTER);
-        mainLayout.addComponent(split);
-		mainLayout.setExpandRatio(split, 1);
+//        mainLayout.addComponent(split);
 		
 		
-		Panel dataPanel = new Panel();
+		
+		VerticalLayout dataPanel = new VerticalLayout();
 		dataPanel.setWidth("350px");
 		dataPanel.setHeight("100%");
 
@@ -80,25 +79,33 @@ public class MortgageCalculator extends Application {
 		BeanItem<InputData> item = new BeanItem<InputData>(input);
 		form.setItemDataSource(item);
 		form.setVisibleItemProperties(FORM_FIELDS);
-//		form.setImmediate(true);
 		form.setInvalidCommitted(false);
 		form.setValidationVisible(false);
+		form.setValidationVisibleOnCommit(false);
 		dataPanel.addComponent(form);
 		
+		Window subwindow = new Window();
+		subwindow.setContent(dataPanel);
+		subwindow.setClosable(false);
+		subwindow.setResizable(false);
+		window.addWindow(subwindow);
+		subwindow.center();
+		subwindow.setStyleName(Runo.WINDOW_DIALOG);
 		
-		split.setFirstComponent(dataPanel);
+//		split.setFirstComponent(dataPanel);
 	
 		charts = new VerticalLayout();
-		charts.setSizeFull();
-		split.setSecondComponent(charts);
-		charts.setWidth("100%");
-		split.setSplitPosition(350, Sizeable.UNITS_PIXELS);
+		charts.setWidth("1024px");
+//		split.setSecondComponent(charts);
+//		charts.setWidth("100%");
+		mainLayout.addComponent(charts);
+		mainLayout.setExpandRatio(charts, 1);
+		mainLayout.setComponentAlignment(charts, Alignment.MIDDLE_CENTER);
+//		split.setSplitPosition(350, Sizeable.UNITS_PIXELS);
 
 		final Chart<Money> moneyChart = new Chart<Money>(item, Money.class, controller, messageSource);
 		final Chart<Time> timeChart = new Chart<Time>(item, Time.class, controller, messageSource);
 		
-//		tff.addListener(moneyChart);
-//		tff.addListener(timeChart);
 		tff.addListener(new FormEditedListener() {
 			
 			public void valueChange(ValueChangeEvent event) {

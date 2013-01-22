@@ -118,7 +118,7 @@ public class Chart<T extends Enum<T>> extends Panel implements FormEditedListene
 
 		addComponent(wrappedChart);
 		wrappedChart.setSizeFull();
-		setSizeUndefined();
+		setWidth("1024px");
 	}
 	
 
